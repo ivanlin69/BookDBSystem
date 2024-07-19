@@ -1,7 +1,7 @@
 #ifndef PARSE_h
 #define PARSE_h
 
-#define HEADER_MAGIC 0x09050207
+#define HEADER_MAGIC 0x4956414E
 
 struct dbHeader {
     unsigned int magic;
@@ -14,12 +14,14 @@ struct book{
     char title[32];
     char author[32];
     char *genre[5];
-    unsigned short publishYear;
-    unsigned short isbn;
+    char isbn[16];
+    unsigned short publishedYear;
+
 };
 
 int createDBHeader(struct dbHeader **outputHeader);
 int validateDBHeader(int fd, struct dbHeader **outputHeader);
+int readBooks(int fd, struct dbHeader *dbheader, struct book **outputBooks);
 int outputDBFile(int fd, struct dbHeader *header);
 
 

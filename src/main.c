@@ -65,6 +65,9 @@ int main (int argc, char *argv[]){
         }
     }
 
+    struct book * books = NULL;
+    readBooks(dbfd, dbheader, &books);
+
     // write/update the dbfile
     if(outputDBFile(dbfd, dbheader) == -1){
         printf("Output failed.\n");
