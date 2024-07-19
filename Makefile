@@ -1,4 +1,4 @@
-TARGET = bin/dbview
+TARGET = bin/BookDBController
 SRC = $(wildcard src/*.c)
 OBJ = $(patsubst src/%.c, obj/%.o, $(SRC))
 

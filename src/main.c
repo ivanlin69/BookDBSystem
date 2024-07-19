@@ -1,8 +1,8 @@
 #include <stdio.h>
-#include <stdbool.h>
 #include <getopt.h>
 
 #include "file.h"
+#include "parse.h"
 
 void printUsage(char *argv[]){
     printf("Usage: %s -n -f ‹database file>\n", argv[0]);
@@ -11,16 +11,18 @@ void printUsage(char *argv[]){
 }
 
 int main (int argc, char *argv[]){
-
     char *filepath = NULL;
-    bool newfile = false;
-    bool list = false;
+    int newfile = 0;
     int option = 0;
 
-    while((option = getopt(argc, argv, "nf:a:l")) != -1){
+    int dbfd = 0;
+    struct dbHeader * dbheader = NULL;
+
+    // parse the user arguments, -n for new file, -f for filepath
+    while((option = getopt(argc, argv, "nf:")) != -1){
         switch(option){
             case 'n':
-                newfile = true;
+                newfile = 1;
                 break;
             case 'f':
                 filepath = optarg;  //optarg is declared globally within the getopt library
@@ -39,18 +41,37 @@ int main (int argc, char *argv[]){
     }
 
     if(newfile){
-        int dbfd = createDBFile(filepath);
+        dbfd = createDBFile(filepath);
         if(dbfd == -1){
             printf("Unable to create database file.\n");
             return -1;
         }
+        // create a new dbheader
+        if(createDBHeader(&dbheader) == -1){
+            printf("Database header creation failed.\n");
+            return -1;
+        }
     } else{
-        int dbfd = openDBFile(filepath);
+        // if the file already exists
+        dbfd = openDBFile(filepath);
         if(dbfd == -1){
             printf("Unable to open database file.\n");
             return -1;
         }
+        // validate and update the header
+        if(validateDBHeader(dbfd, &dbheader) == -1){
+            printf("Database header validation failed.\n");
+            return -1;
+        }
     }
+
+    // write/update the dbfile
+    if(outputDBFile(dbfd, dbheader) == -1){
+        printf("Output failed.\n");
+        return -1;
+    }
+
+    // for testing
     printf("Newfile %d\n", newfile);
     printf("Filepath %s\n", filepath);
 
