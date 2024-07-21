@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -96,6 +97,33 @@ int readBooks(int fd, struct dbHeader *dbheader, struct book **outputBooks){
     }
 
     *outputBooks = books;
+    return 0;
+}
+
+int addBook(struct dbHeader *dbheader, struct book *books, char* info){
+
+    unsigned short count = dbheader->count;
+
+    strncpy(books[count-1].title, strtok(info, ","), sizeof(books[count-1].title) - 1);
+    strncpy(books[count-1].author, strtok(NULL, ","), sizeof(books[count-1].author) - 1);
+    strncpy(books[count-1].genre, strtok(NULL, ","), sizeof(books[count-1].genre) - 1);
+    strncpy(books[count-1].isbn, strtok(NULL, ","), sizeof(books[count-1].isbn) - 1);
+    books[count-1].publishedYear = atoi(strtok(NULL, ","));
+
+    // for ensuring null-terminatio
+    books[count-1].title[sizeof(books[count-1].title) - 1] = '\0';
+    books[count-1].author[sizeof(books[count-1].author) - 1] = '\0';
+    books[count-1].genre[sizeof(books[count-1].genre) - 1] = '\0';
+    books[count-1].isbn[sizeof(books[count-1].isbn) - 1] = '\0';
+
+    printf("\nTesting for info:\n");
+    printf("%s  %s  %s  %s  %d  \n",
+        books[dbheader->count-1].title,
+        books[dbheader->count-1].author,
+        books[dbheader->count-1].genre,
+        books[dbheader->count-1].isbn,
+        books[dbheader->count-1].publishedYear);
+
     return 0;
 }
 

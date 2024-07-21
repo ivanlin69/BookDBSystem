@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <getopt.h>
+#include <stdlib.h>
 
 #include "file.h"
 #include "parse.h"
@@ -8,24 +9,34 @@ void printUsage(char *argv[]){
     printf("Usage: %s -n -f ‹database file>\n", argv[0]);
     printf("\t -n create new database file\n");
     printf("\t -f (required) path to database file\n");
+
+    printf("Usage: %s -f ‹database file> -a <new book info>\n", argv[0]);
+    printf("\t -a (required) info to the new book(title, author, genre, isbn)\n");
 }
 
 int main (int argc, char *argv[]){
     char *filepath = NULL;
     int newfile = 0;
     int option = 0;
+    char *addInfo = NULL;
+    int addFlag = 0;
 
     int dbfd = 0;
     struct dbHeader * dbheader = NULL;
 
     // parse the user arguments, -n for new file, -f for filepath
-    while((option = getopt(argc, argv, "nf:")) != -1){
+    //  -a for adding an new book to the database
+    while((option = getopt(argc, argv, "nf:a:")) != -1){
         switch(option){
             case 'n':
                 newfile = 1;
                 break;
             case 'f':
                 filepath = optarg;  //optarg is declared globally within the getopt library
+                break;
+            case 'a':
+                addInfo = optarg;
+                addFlag = 1;
                 break;
             case '?':
                 printf("Invalid option -%c\n", option);
@@ -66,7 +77,31 @@ int main (int argc, char *argv[]){
     }
 
     struct book * books = NULL;
-    readBooks(dbfd, dbheader, &books);
+    if(readBooks(dbfd, dbheader, &books) == -1){
+        printf("Read books failed.\n");
+        return -1;
+    }
+
+    if(addFlag == 1){
+        if(addInfo == NULL){
+            printf("Lack an argument for adding new book.\n");
+            printUsage(argv);
+            return 0;
+        }
+
+        //allocate spaces for new book and update the info header
+        dbheader->count++;
+        books = (struct book*) realloc(books, (dbheader->count)*sizeof(struct book));
+        if(books == NULL){
+            printf("realloc failed.\n");
+            return -1;
+        }
+
+        if(addBook(dbheader, books, addInfo) == -1){
+            printf("Adding new book failed.\n");
+            return -1;
+        }
+    }
 
     // write/update the dbfile
     if(outputDBFile(dbfd, dbheader) == -1){
@@ -77,6 +112,8 @@ int main (int argc, char *argv[]){
     // for testing
     printf("Newfile %d\n", newfile);
     printf("Filepath %s\n", filepath);
+    printf("AddInfo %s\n", addInfo);
+
 
     return 0;
 }
