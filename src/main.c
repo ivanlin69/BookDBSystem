@@ -13,7 +13,7 @@ void printUsage(char *argv[]){
     printf("Usage: %s -f ‹database file> -a <new book info>\n", argv[0]);
     printf("\t -a (required) info to the new book(title, author, genre, isbn)\n");
 
-    printf("Usage: %s -f ‹database file> -l", argv[0]);
+    printf("Usage: %s -f ‹database file> -l\n", argv[0]);
     printf("\t -l List all books in the detabase\n");
 
     printf("Usage: %s -f ‹database file> -r <book title>\n", argv[0]);
