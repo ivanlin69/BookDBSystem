@@ -115,7 +115,7 @@ int addBook(struct dbHeader *dbheader, struct book *books, char* info){
     books[count-1].author[sizeof(books[count-1].author) - 1] = '\0';
     books[count-1].genre[sizeof(books[count-1].genre) - 1] = '\0';
     books[count-1].isbn[sizeof(books[count-1].isbn) - 1] = '\0';
-
+    /**
     printf("\nTesting for info:\n");
     printf("%s  %s  %s  %s  %d  \n",
         books[dbheader->count-1].title,
@@ -123,7 +123,15 @@ int addBook(struct dbHeader *dbheader, struct book *books, char* info){
         books[dbheader->count-1].genre,
         books[dbheader->count-1].isbn,
         books[dbheader->count-1].publishedYear);
+        */
+    return 0;
+}
 
+int removeBook(struct dbHeader *dbheader, struct book *books, char *title){
+    return 0;
+}
+
+int updateBookPY(struct dbHeader *dbheader, struct book *books, char *info){
     return 0;
 }
 
@@ -133,15 +141,16 @@ int outputDBFile(int fd, struct dbHeader *header, struct book* books){
         return -1;
     }
     unsigned short count = header->count;
+    struct dbHeader outputHeader = {0};
     // update the content and align the endianness(from host to file/network)
-    header->magic = htonl(header->magic);
-    header->version = htons(header->version);
-    header->count = htons(header->count);
-    header->filesize = htonl(sizeof(struct dbHeader)+sizeof(struct book)*count);
+    outputHeader.magic = htonl(header->magic);
+    outputHeader.version = htons(header->version);
+    outputHeader.count = htons(header->count);
+    outputHeader.filesize = htonl(sizeof(struct dbHeader)+sizeof(struct book)*count);
 
     // prepare to write
     lseek(fd, SEEK_SET, 0);  // move cursor to the very front
-    if(write(fd, header, sizeof(struct dbHeader)) != sizeof(struct dbHeader)){
+    if(write(fd, &outputHeader, sizeof(struct dbHeader)) != sizeof(struct dbHeader)){
         perror("write header");
         return -1;
     }
@@ -155,6 +164,18 @@ int outputDBFile(int fd, struct dbHeader *header, struct book* books){
             return -1;
         }
     }
-
     return 0;
+}
+
+void listAllBooks(struct dbHeader *header, struct book* books){
+    for(unsigned short i=0; i<header->count; i++){
+        printf("\nBook %d:\n", i+1);
+        // %-15s left-justified within a field of 15 characters
+        // The - sign indicates left-justification, remove it for right-justification
+        printf("%15s: %s\n", "Title", books[i].title);
+        printf("%15s: %s\n", "Author", books[i].author);
+        printf("%15s: %s\n", "Genre", books[i].genre);
+        printf("%15s: %s\n", "ISBN", books[i].isbn);
+        printf("%15s: %d\n", "Published year", books[i].publishedYear);
+    }
 }

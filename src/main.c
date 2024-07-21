@@ -20,13 +20,14 @@ int main (int argc, char *argv[]){
     int option = 0;
     char *addInfo = NULL;
     int addFlag = 0;
+    int listFlag = 0;
 
     int dbfd = 0;
     struct dbHeader * dbheader = NULL;
 
     // parse the user arguments, -n for new file, -f for filepath
     //  -a for adding an new book to the database
-    while((option = getopt(argc, argv, "nf:a:")) != -1){
+    while((option = getopt(argc, argv, "nf:a:l")) != -1){
         switch(option){
             case 'n':
                 newfile = 1;
@@ -37,6 +38,9 @@ int main (int argc, char *argv[]){
             case 'a':
                 addInfo = optarg;
                 addFlag = 1;
+                break;
+            case 'l':
+                listFlag = 1;
                 break;
             case '?':
                 printf("Invalid option -%c\n", option);
@@ -103,17 +107,23 @@ int main (int argc, char *argv[]){
         }
     }
 
+    if(listFlag == 1){
+            listAllBooks(dbheader, books);
+    }
+
     // write/update the dbfile
     if(outputDBFile(dbfd, dbheader, books) == -1){
         printf("Output failed.\n");
         return -1;
     }
 
-    // for testing
+    /**
+    printf("\nFor testing:\n");
     printf("Newfile %d\n", newfile);
     printf("Filepath %s\n", filepath);
     printf("AddInfo %s\n", addInfo);
+    */
 
-
+    close(dbfd);
     return 0;
 }

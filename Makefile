@@ -6,7 +6,10 @@ default: $(TARGET)
 
 run: clean default
 	./$(TARGET) -n -f test.db
-	./$(TARGET) -a "The Fountainhead, Ayn Rand, 	Philosophical fiction,  978-0026009102, 1943" -f test.db
+	./$(TARGET) -a "The Fountainhead,Ayn Rand,Philosophical fiction,978-0026009102,1943" -f test.db
+	./$(TARGET) -a "Meditations,Marcus Aurelius,Philosophy,978-1503280465,2018" -f test.db
+	./$(TARGET) -a "When Nietzsche Wept,Irvin D. Yalom,Philosophical fiction,978-0062009302,1992" -f test.db
+	./$(TARGET) -f test.db -l
 
 clean:
 	rm -f obj/*.o
