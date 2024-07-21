@@ -12,6 +12,15 @@ void printUsage(char *argv[]){
 
     printf("Usage: %s -f ‹database file> -a <new book info>\n", argv[0]);
     printf("\t -a (required) info to the new book(title, author, genre, isbn)\n");
+
+    printf("Usage: %s -f ‹database file> -l", argv[0]);
+    printf("\t -l List all books in the detabase\n");
+
+    printf("Usage: %s -f ‹database file> -r <book title>\n", argv[0]);
+    printf("\t -r (required) title of the book to be removed\n");
+
+    printf("Usage: %s -f ‹database file> -u <book title, year>\n", argv[0]);
+    printf("\t -u (required) title of the book to be updated and the year\n");
 }
 
 int main (int argc, char *argv[]){
@@ -19,15 +28,19 @@ int main (int argc, char *argv[]){
     int newfile = 0;
     int option = 0;
     char *addInfo = NULL;
+    char *removeTitle = NULL;
+    char *updateYear = NULL;
     int addFlag = 0;
     int listFlag = 0;
+    int removeFlag = 0;
+    int updateFlag = 0;
 
     int dbfd = 0;
     struct dbHeader * dbheader = NULL;
 
     // parse the user arguments, -n for new file, -f for filepath
     //  -a for adding an new book to the database
-    while((option = getopt(argc, argv, "nf:a:l")) != -1){
+    while((option = getopt(argc, argv, "nf:a:lr:u:")) != -1){
         switch(option){
             case 'n':
                 newfile = 1;
@@ -41,6 +54,14 @@ int main (int argc, char *argv[]){
                 break;
             case 'l':
                 listFlag = 1;
+                break;
+            case 'r':
+                removeTitle = optarg;
+                removeFlag = 1;
+                break;
+            case 'u':
+                updateYear = optarg;
+                updateFlag = 1;
                 break;
             case '?':
                 printf("Invalid option -%c\n", option);
@@ -88,7 +109,7 @@ int main (int argc, char *argv[]){
 
     if(addFlag == 1){
         if(addInfo == NULL){
-            printf("Lack an argument for adding new book.\n");
+            printf("Lack of an argument for adding new book.\n");
             printUsage(argv);
             return 0;
         }
@@ -107,8 +128,34 @@ int main (int argc, char *argv[]){
         }
     }
 
+    if(removeFlag == 1){
+        if(removeTitle == NULL){
+            printf("Lack of an argument for removing the book.\n");
+            printUsage(argv);
+            return 0;
+        }
+
+        if(removeBook(dbheader, &books, removeTitle) == -1){
+            printf("Removing the book: %s failed.\n", removeTitle);
+            return -1;
+        }
+    }
+
+    if(updateFlag == 1){
+        if(updateYear == NULL){
+            printf("Lack of an argument for updating the book.\n");
+            printUsage(argv);
+            return 0;
+        }
+
+        if(updateBookPY(dbheader, books, updateYear) == -1){
+            printf("Updating the book's published year failed.\n");
+            return -1;
+        }
+    }
+
     if(listFlag == 1){
-            listAllBooks(dbheader, books);
+        listAllBooks(dbheader, books);
     }
 
     // write/update the dbfile

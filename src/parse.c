@@ -127,11 +127,49 @@ int addBook(struct dbHeader *dbheader, struct book *books, char* info){
     return 0;
 }
 
-int removeBook(struct dbHeader *dbheader, struct book *books, char *title){
+int removeBook(struct dbHeader *dbheader, struct book **books, char *title){
+
+    int index=-1;
+    for(int i=0; i<dbheader->count; i++){
+        if(strcmp((*books)[i].title, title) == 0){
+            index = i;
+            break;
+        }
+    }
+    if(index == -1){
+        printf("Book not found.\n");
+        return 0;
+    }
+    for(int i=index; i<dbheader->count-1; i++){
+        (*books)[i] = (*books)[i+1];
+    }
+    dbheader->count--;
+    struct book *newBooks = (struct book *) realloc(*books, (dbheader->count)*sizeof(struct book));
+    if(newBooks == NULL){
+        printf("realloc failed.\n");
+        return -1;
+    }
+    *books = newBooks;
     return 0;
 }
 
 int updateBookPY(struct dbHeader *dbheader, struct book *books, char *info){
+
+    char *title = strtok(info, ",");
+    unsigned short newYear = atoi(strtok(NULL, ","));
+
+    int index=-1;
+    for(int i=0; i<dbheader->count; i++){
+        if(strcmp(books[i].title, title) == 0){
+            index = i;
+            break;
+        }
+    }
+    if(index == -1){
+        printf("Book not found.\n");
+        return 0;
+    }
+    books[index].publishedYear = newYear;
     return 0;
 }
 
@@ -149,7 +187,7 @@ int outputDBFile(int fd, struct dbHeader *header, struct book* books){
     outputHeader.filesize = htonl(sizeof(struct dbHeader)+sizeof(struct book)*count);
 
     // prepare to write
-    lseek(fd, SEEK_SET, 0);  // move cursor to the very front
+    lseek(fd, 0, SEEK_SET);  // move cursor to the very front
     if(write(fd, &outputHeader, sizeof(struct dbHeader)) != sizeof(struct dbHeader)){
         perror("write header");
         return -1;
@@ -163,6 +201,11 @@ int outputDBFile(int fd, struct dbHeader *header, struct book* books){
             perror("write books");
             return -1;
         }
+    }
+    // Truncate the file to the new size if needed
+    if (ftruncate(fd, sizeof(struct dbHeader) + sizeof(struct book) * count) == -1) {
+        perror("ftruncate");
+        return -1;
     }
     return 0;
 }
