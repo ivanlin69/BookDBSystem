@@ -104,7 +104,7 @@ int main (int argc, char *argv[]){
     }
 
     // write/update the dbfile
-    if(outputDBFile(dbfd, dbheader) == -1){
+    if(outputDBFile(dbfd, dbheader, books) == -1){
         printf("Output failed.\n");
         return -1;
     }

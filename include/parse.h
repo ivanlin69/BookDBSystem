@@ -23,7 +23,7 @@ int createDBHeader(struct dbHeader **outputHeader);
 int validateDBHeader(int fd, struct dbHeader **outputHeader);
 int readBooks(int fd, struct dbHeader *dbheader, struct book **outputBooks);
 int addBook(struct dbHeader *dbheader, struct book *books, char *info);
-int outputDBFile(int fd, struct dbHeader *header);
+int outputDBFile(int fd, struct dbHeader *header, struct book* books);
 
 
 #endif

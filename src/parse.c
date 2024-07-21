@@ -127,25 +127,34 @@ int addBook(struct dbHeader *dbheader, struct book *books, char* info){
     return 0;
 }
 
-int outputDBFile(int fd, struct dbHeader *header){
+int outputDBFile(int fd, struct dbHeader *header, struct book* books){
     if(fd < 0){
         printf("Invalid file descriptor.\n");
         return -1;
     }
-
-    struct dbHeader * dbHeader = (struct dbHeader *) malloc(sizeof(struct dbHeader));
-    if(dbHeader == NULL){
-        printf("Malloc failed.\n");
-        return -1;
-    }
+    unsigned short count = header->count;
     // update the content and align the endianness(from host to file/network)
-    dbHeader->magic = htonl(header->magic);
-    dbHeader->version = htons(header->version);
-    dbHeader->count = htons(header->count);
-    dbHeader->filesize = htonl(header->filesize);
+    header->magic = htonl(header->magic);
+    header->version = htons(header->version);
+    header->count = htons(header->count);
+    header->filesize = htonl(sizeof(struct dbHeader)+sizeof(struct book)*count);
 
     // prepare to write
     lseek(fd, SEEK_SET, 0);  // move cursor to the very front
-    write(fd, dbHeader, sizeof(struct dbHeader));
+    if(write(fd, header, sizeof(struct dbHeader)) != sizeof(struct dbHeader)){
+        perror("write header");
+        return -1;
+    }
+
+    if(books){
+        for(unsigned short i=0; i<count; i++){
+            books[i].publishedYear = htons(books[i].publishedYear);
+        }
+        if(write(fd, books, count*sizeof(struct book)) != count*sizeof(struct book)){
+            perror("write books");
+            return -1;
+        }
+    }
+
     return 0;
 }
