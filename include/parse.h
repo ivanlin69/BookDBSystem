@@ -22,7 +22,7 @@ struct book{
 int createDBHeader(struct dbHeader **outputHeader);
 int validateDBHeader(int fd, struct dbHeader **outputHeader);
 int readBooks(int fd, struct dbHeader *dbheader, struct book **outputBooks);
-int addBook(struct dbHeader *dbheader, struct book *books, char *title);
+int addBook(struct dbHeader *dbheader, struct book **books, char *title);
 int removeBook(struct dbHeader *dbheader, struct book **books, char *info);
 int updateBookPY(struct dbHeader *dbheader, struct book *books, char *info);
 int outputDBFile(int fd, struct dbHeader *header, struct book* books);

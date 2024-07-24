@@ -64,8 +64,21 @@ int sendInitResp(clientState * client, protocolHd * phdr){
     return 0;
 }
 
+int sendAddResp(clientState * client, protocolHd * phdr){
+    phdr->type = MSG_ADD_RESP;
+    phdr->len = 0;
+    phdr->type = htonl(phdr->type);
+    phdr->len = htons(phdr->len);
+    // write content(ADD, MSG_ADD_RESP)
+    if(write(client->fd, phdr, sizeof(phdr)) <= 0){
+        perror("write");
+        return -1;
+    }
+    return 0;
+}
 
-void handleClient(clientState* client, struct dbHeader *dbHeader, struct book *books){
+
+void handleClient(clientState* client, int dbfd, struct dbHeader *dbHeader, struct book **books){
     protocolHd *phdr = (protocolHd *) client->buffer;
 
     phdr->type = ntohl(phdr->type);
@@ -83,10 +96,34 @@ void handleClient(clientState* client, struct dbHeader *dbHeader, struct book *b
             return;
         }
         sendInitResp(client, phdr);
+        client->state = STATE_MSG;
         return;
     }
 
     if(client->state == STATE_MSG){
+
+        switch(phdr->type){
+            case MSG_ADD_REQ:{
+                protocolAddReq *addreq = (protocolAddReq *) &phdr[1];
+                printf("Adding new book ...\n");
+                printf("content: %s\n", addreq->data);
+                if(addBook(dbHeader, books, addreq->data) == -1){
+                    printf("Adding new book failed.\n");
+                    sendError(client, phdr);
+                    return;
+                } else{
+                    sendAddResp(client, phdr);
+                    outputDBFile(dbfd, dbHeader, *books);
+                    printf("Book added successfully.\n");
+                    return;
+                }
+            }
+
+
+
+            default:
+                return;
+        }
 
     }
 

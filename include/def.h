@@ -42,5 +42,10 @@ typedef struct{
     uint16_t version;
 } protocolInitRESP;
 
+typedef struct{
+    char data[1024];
+} protocolAddReq;
+
+
 
 #endif

@@ -18,8 +18,9 @@ typedef struct{
 void initialClients(clientState * clients);
 int findEmptySlot(clientState * clients);
 int findSlotByFD(int fd, clientState * clients);
-void handleClient(clientState * client, struct dbHeader *dbHeader, struct book *books);
+void handleClient(clientState * client, int dbfd, struct dbHeader *dbHeader, struct book **books);
 int sendError(clientState * client, protocolHd * phdr);
 int sendInitResp(clientState * client, protocolHd * phdr);
+int sendAddResp(clientState * client, protocolHd * phdr);
 
 #endif

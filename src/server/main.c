@@ -41,7 +41,7 @@ void printUsage(char *argv[]){
     printf("\t -p (required) port number to listen to\n");
 }
 
-void pollLoop(unsigned short port, struct dbHeader *dbHeader, struct book *books){
+void pollLoop(unsigned short port, struct dbHeader *dbHeader, struct book **books, int dbfd){
     int listenFD;
     int connectedFD;
     int freeSlot;
@@ -129,7 +129,7 @@ void pollLoop(unsigned short port, struct dbHeader *dbHeader, struct book *books
 
                 ssize_t readData = read(fd, clientStates[slot].buffer, sizeof(clientStates[slot].buffer));
                 if(readData <= 0){
-                    perror("read");
+                    // perror("read");
                     close(fd);
                     fds[i].fd = -1;
                     clientStates[slot].fd = -1;
@@ -140,7 +140,7 @@ void pollLoop(unsigned short port, struct dbHeader *dbHeader, struct book *books
                     clientStates[slot].buffer[readData] = '\0';
                     printf("Data from the client: %s \n", clientStates[slot].buffer);
                      */
-                    handleClient(&clientStates[slot], dbHeader, books);
+                    handleClient(&clientStates[slot], dbfd, dbHeader, books);
                 }
             }
         }
@@ -253,15 +253,7 @@ int main (int argc, char *argv[]){
             return 0;
         }
 
-        //allocate spaces for new book and update the info header
-        dbheader->count++;
-        books = (struct book*) realloc(books, (dbheader->count)*sizeof(struct book));
-        if(books == NULL){
-            printf("realloc failed.\n");
-            return -1;
-        }
-
-        if(addBook(dbheader, books, addInfo) == -1){
+        if(addBook(dbheader, &books, addInfo) == -1){
             printf("Adding new book failed.\n");
             return -1;
         }
@@ -309,7 +301,7 @@ int main (int argc, char *argv[]){
             printf("Given port number is bad.\n");
             return 0;
         } else {
-            pollLoop(port, dbheader, books);
+            pollLoop(port, dbheader, &books, dbfd);
         }
     }
 

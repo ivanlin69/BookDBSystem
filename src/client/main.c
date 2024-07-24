@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include "def.h"
+#include "client.h"
 
 
 void printUsage(char *argv[]){
@@ -14,46 +15,6 @@ void printUsage(char *argv[]){
     printf("\t -u (required) title of the book to be updated and the year\n");
 }
 
-int sendInit(int fd){
-    if(fd == -1){
-        printf("Bad file descriptor.\n");
-        return -1;
-    }
-    char buffer[1024] = {0};
-    // write protocal header(INIT_REQ)
-    protocolHd *phdr = (protocolHd *) buffer;
-    phdr->type = MSG_INIT_REQ;
-    phdr->len = 1;
-    phdr->type = htonl(phdr->type);
-    phdr->len = htons(phdr->len);
-    // write content(INIT, PROTO_VER)
-    protocolInitReq *init = (protocolInitReq *) &phdr[1];
-    init->version = PROTO_VER;
-    init->version = htons(init->version);
-
-    if(write(fd, buffer, sizeof(phdr) + sizeof(protocolInitReq)) <= 0){
-        perror("write");
-        close(fd);
-        return -1;
-    }
-    // read the respondse from host
-    if(read(fd, buffer, sizeof(buffer)) <= 0){
-        perror("read");
-        close(fd);
-        return -1;
-    }
-    phdr->type = ntohl(phdr->type);
-    phdr->len = ntohs(phdr->len);
-    // check the response from host
-    if(phdr->type == MSG_ERROR){
-        printf("Protocal mismatched).\n");
-        close(fd);
-        return -1;
-    }
-
-    printf("Server connected.\n");
-    return 0;
-}
 
 int main (int argc, char *argv[]){
 
@@ -144,14 +105,16 @@ int main (int argc, char *argv[]){
         return -1;
     }
 
-
     if(addFlag == 1){
         if(addInfo == NULL){
             printf("Lack of an argument for adding new book.\n");
             printUsage(argv);
             return 0;
+        } else {
+            if(sendAddReq(hostFD, addInfo) == -1){
+                return -1;
+            }
         }
-
     }
 
     if(removeFlag == 1){
