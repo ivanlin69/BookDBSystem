@@ -12,6 +12,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "def.h"
 #include "file.h"
 #include "parse.h"
 #include "server.h"
@@ -135,9 +136,13 @@ void pollLoop(unsigned short port, struct dbHeader *dbHeader, struct book *books
                     clientStates[slot].state = STATE_DISCONNECTED;
                     printf("Client disconnected.\n");
                 } else {
+                    /**
                     clientStates[slot].buffer[readData] = '\0';
                     printf("Data from the client: %s \n", clientStates[slot].buffer);
+                     */
+                    handleClient(&clientStates[slot], dbHeader, books);
                 }
+            }
         }
         // reset fds
         nfds = 1;

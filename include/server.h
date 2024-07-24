@@ -2,16 +2,12 @@
 #define SERVER_h
 
 #include <poll.h>
+#include "def.h"
+#include "parse.h"
 
 #define MAX_CLIENTS 20
 #define PORT 8080
 #define BUFFERSIZE 1024
-
-typedef enum{
-    STATE_NEW,
-    STATE_CONNECTED,
-    STATE_DISCONNECTED
-} fileState;
 
 typedef struct{
     int fd;
@@ -19,9 +15,11 @@ typedef struct{
     char buffer[BUFFERSIZE];
 } clientState;
 
-void initialClients(clientState * states);
-int findEmptySlot(clientState * states);
-int findSlotByFD(int fd, clientState * states);
-
+void initialClients(clientState * clients);
+int findEmptySlot(clientState * clients);
+int findSlotByFD(int fd, clientState * clients);
+void handleClient(clientState * client, struct dbHeader *dbHeader, struct book *books);
+int sendError(clientState * client, protocolHd * phdr);
+int sendInitResp(clientState * client, protocolHd * phdr);
 
 #endif
