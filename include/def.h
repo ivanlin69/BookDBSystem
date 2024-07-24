@@ -9,9 +9,8 @@
 typedef enum{
     STATE_NEW,
     STATE_CONNECTED,
-    STATE_DISCONNECTED,
     STATE_MSG,
-    STATE_FINISHED
+    STATE_DISCONNECTED,
 } fileState;
 
 // define message types
@@ -22,10 +21,10 @@ typedef enum{
     MSG_ADD_RESP,
     MSG_DEL_REQ,
     MSG_DEL_RESP,
-    MSG_LIST_REQ,
-    MSG_LIST_RESP,
     MSG_UPDATE_REQ,
     MSG_UPDATE_RESP,
+    MSG_LIST_REQ,
+    MSG_LIST_RESP,
     MSG_ERROR
 } protocolMSG;
 
@@ -46,6 +45,12 @@ typedef struct{
     char data[1024];
 } protocolAddReq;
 
-
+typedef struct{
+    char title[32];
+    char author[32];
+    char genre[32];
+    char isbn[16];
+    uint16_t publishedYear;
+} protocolListRESP;
 
 #endif

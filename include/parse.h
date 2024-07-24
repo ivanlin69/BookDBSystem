@@ -16,7 +16,6 @@ struct book{
     char genre[32];
     char isbn[16];
     unsigned short publishedYear;
-
 };
 
 int createDBHeader(struct dbHeader **outputHeader);

@@ -77,9 +77,7 @@ int readBooks(int fd, struct dbHeader *dbheader, struct book **outputBooks){
     if(fd < 0){
         printf("Invalid file descriptor.\n");
         return -1;
-    }
-
-    unsigned short count = dbheader->count;
+    }    unsigned short count = dbheader->count;
     struct book * books = (struct book *) calloc(count, sizeof(struct book));
     if(books == NULL){
         printf("Calloc failed.\n");
@@ -95,7 +93,6 @@ int readBooks(int fd, struct dbHeader *dbheader, struct book **outputBooks){
     for(size_t i=0; i<count; i++){
         books[i].publishedYear = ntohs(books[i].publishedYear);
     }
-
     *outputBooks = books;
     return 0;
 }

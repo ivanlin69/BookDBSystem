@@ -6,9 +6,9 @@
 #include "parse.h"
 
 #define MAX_CLIENTS 20
-#define PORT 8080
 #define BUFFERSIZE 1024
 
+// built for finite state machine
 typedef struct{
     int fd;
     fileState state;
@@ -18,9 +18,11 @@ typedef struct{
 void initialClients(clientState * clients);
 int findEmptySlot(clientState * clients);
 int findSlotByFD(int fd, clientState * clients);
+
 void handleClient(clientState * client, int dbfd, struct dbHeader *dbHeader, struct book **books);
 int sendError(clientState * client, protocolHd * phdr);
 int sendInitResp(clientState * client, protocolHd * phdr);
 int sendAddResp(clientState * client, protocolHd * phdr);
+int sendListResp(clientState * client, protocolHd * phdr, struct dbHeader* dbHeader, struct book * books);
 
 #endif

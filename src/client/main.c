@@ -3,16 +3,27 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
 #include "def.h"
 #include "client.h"
 
 
 void printUsage(char *argv[]){
-    printf("Usage: %s -p <port number> -h ‹host ip> -a\n", argv[0]);
-    printf("\t -a (required) info to the new book(title, author, genre, isbn)\n");
-    printf("\t -l List all books in the detabase\n");
-    printf("\t -r (required) title of the book to be removed\n");
-    printf("\t -u (required) title of the book to be updated and the year\n");
+    printf("Usage: %s [options]\n", argv[0]);
+
+    printf("\nOptions:\n");
+    printf("  -p <port number>      Specify the port number to connect to (required)\n");
+    printf("  -h <host ip>          Specify the host IP address to connect to (required)\n");
+    printf("  -a <book info>        Add a new book with the given info (title, author, genre, isbn)\n");
+    printf("  -l                    List all books in the database\n");
+    printf("  -r <book title>       Remove the book with the given title\n");
+    printf("  -u <title, year>      Update the published year of the book with the given title\n");
+
+    printf("\nExamples:\n");
+    printf("  %s -p 8080 -h 127.0.0.1 -a 'Title,Author,Genre,ISBN'\n", argv[0]);
+    printf("  %s -p 8080 -h 127.0.0.1 -l\n", argv[0]);
+    printf("  %s -p 8080 -h 127.0.0.1 -r 'Title'\n", argv[0]);
+    printf("  %s -p 8080 -h 127.0.0.1 -u 'Title,Year'\n", argv[0]);
 }
 
 
@@ -20,12 +31,12 @@ int main (int argc, char *argv[]){
 
     int option = 0;
     char *portNumber = NULL;
-    unsigned short port = 0;
     char *hostIP = NULL;
     char *addInfo = NULL;
     char *removeTitle = NULL;
-    char *updateYear = NULL;
+    char *updateInfo = NULL;
 
+    unsigned short port = 0;
     int addFlag = 0;
     int listFlag = 0;
     int removeFlag = 0;
@@ -52,7 +63,7 @@ int main (int argc, char *argv[]){
                 removeFlag = 1;
                 break;
             case 'u':
-                updateYear = optarg;
+                updateInfo = optarg;
                 updateFlag = 1;
                 break;
             case '?':
@@ -100,7 +111,7 @@ int main (int argc, char *argv[]){
         close(hostFD);
         return 0;
     }
-
+    // Sending request for initialization
     if(sendInit(hostFD) == -1){
         return -1;
     }
@@ -110,10 +121,10 @@ int main (int argc, char *argv[]){
             printf("Lack of an argument for adding new book.\n");
             printUsage(argv);
             return 0;
-        } else {
-            if(sendAddReq(hostFD, addInfo) == -1){
-                return -1;
-            }
+        }
+        // send request for adding a new book
+        if(sendAddReq(hostFD, addInfo) == -1){
+            return -1;
         }
     }
 
@@ -123,20 +134,29 @@ int main (int argc, char *argv[]){
             printUsage(argv);
             return 0;
         }
-
+        // send request for removing a book
+        if(sendDelReq(hostFD, removeTitle) == -1){
+            return -1;
+        }
     }
 
     if(updateFlag == 1){
-        if(updateYear == NULL){
+        if(updateInfo == NULL){
             printf("Lack of an argument for updating the book.\n");
             printUsage(argv);
             return 0;
         }
-
+        // send request for updating a book's published year'
+        if(sendUpdateReq(hostFD, updateInfo) == -1){
+            return -1;
+        }
     }
 
     if(listFlag == 1){
-
+        // send request for listing all books
+        if(sendListReq(hostFD) == -1){
+            return -1;
+        }
     }
     close(hostFD);
     return 0;
