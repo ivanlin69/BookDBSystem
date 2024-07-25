@@ -46,6 +46,28 @@ This is a `C`-based program functions as a database system to manage book inform
 - -l: List all books in the database.
 
 
+**Server**
+```bash
+    ./bin/BookDBServer -f <database file> -p <port number>
+   ```
+-  -p: Port number to listen on (required)
+
+**Client**
+```bash
+   Examples:
+  ./bin/BookDBClient -p 8080 -h 127.0.0.1 -a 'Title,Author,Genre,ISBN'
+  ./bin/BookDBClient -p 8080 -h 127.0.0.1 -l
+  ./bin/BookDBClient -p 8080 -h 127.0.0.1 -r 'Title'
+  ./bin/BookDBClient -p 8080 -h 127.0.0.1 -u 'Title,Year'
+   ```
+- -p: Specify the port number to connect to (required)
+- -h: Specify the host IP address to connect to (required)
+- -a: Add a new book with the given info (title, author, genre, isbn)
+- -l: List all books in the database
+- -r: Remove the book with the given title
+- -u: Update the published year of the book with the given title
+
+  
 ## Prerequisites
 
 - A modern C compiler (e.g., GCC, Clang)
