@@ -1,5 +1,3 @@
-# BookDB
- 
 # Book Database System
 
 ## Description
@@ -30,7 +28,7 @@ This is a `C`-based program functions as a database system to manage book inform
 
 ## Usage
 
-**Local**
+### Local
   ```bash
   ./bin/BookDBServer -n -f <database file>
   ./bin/BookDBServer -f <database file> -a <new book info>
@@ -46,15 +44,14 @@ This is a `C`-based program functions as a database system to manage book inform
 - -l: List all books in the database.
 
 
-**Server**
+### Server
 ```bash
     ./bin/BookDBServer -f <database file> -p <port number>
    ```
 -  -p: Port number to listen on (required)
 
-**Client**
+### Client
 ```bash
-   Examples:
   ./bin/BookDBClient -p 8080 -h 127.0.0.1 -a 'Title,Author,Genre,ISBN'
   ./bin/BookDBClient -p 8080 -h 127.0.0.1 -l
   ./bin/BookDBClient -p 8080 -h 127.0.0.1 -r 'Title'
@@ -87,7 +84,7 @@ This is a `C`-based program functions as a database system to manage book inform
    ```
 3. **Run the Program(Example)**
    ```bash
-   ./bin/BookDBController -n -f test.db
+   ./bin/BookDBServer -n -f test.db
    ```
    
 ## File Structure
@@ -95,6 +92,8 @@ This is a `C`-based program functions as a database system to manage book inform
 - **main**: The main entry point of the program.
 - **parse**: Contains operations for controlling the data (adding, removing, updating, listing books).
 - **file**: Handles file operations (creating and opening database files).
+- **server**: Manages server operations, handling multiple client connections and managing states.
+- **client**: Manages client operations, sending requests to the server and processing responses.
 
 
 ## Contributing
