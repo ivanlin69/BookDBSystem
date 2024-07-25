@@ -77,9 +77,7 @@ int readBooks(int fd, struct dbHeader *dbheader, struct book **outputBooks){
     if(fd < 0){
         printf("Invalid file descriptor.\n");
         return -1;
-    }
-
-    unsigned short count = dbheader->count;
+    }    unsigned short count = dbheader->count;
     struct book * books = (struct book *) calloc(count, sizeof(struct book));
     if(books == NULL){
         printf("Calloc failed.\n");
@@ -95,34 +93,70 @@ int readBooks(int fd, struct dbHeader *dbheader, struct book **outputBooks){
     for(size_t i=0; i<count; i++){
         books[i].publishedYear = ntohs(books[i].publishedYear);
     }
-
     *outputBooks = books;
     return 0;
 }
 
-int addBook(struct dbHeader *dbheader, struct book *books, char* info){
+int addBook(struct dbHeader *dbheader, struct book **books, char* info){
 
-    unsigned short count = dbheader->count;
+    char* title = strtok(info, ",");
+    if(title == NULL){
+        return -1;
+    }
+    char* author = strtok(NULL, ",");
+    if(author == NULL){
+        return -1;
+    }
+    char* genre = strtok(NULL, ",");
+    if(genre == NULL){
+        return -1;
+    }
+    char* isbn = strtok(NULL, ",");
+    if(isbn == NULL){
+        return -1;
+    }
+    char* publishedYear = strtok(NULL, ",");
+    if(publishedYear == NULL){
+        return -1;
+    }
+    // make sure the book doesn't exist
+    for(int i=0; i<dbheader->count; i++){
+        if(strcmp((*books)[i].title, title) == 0){
+            printf("Book <%s> is already in the database.\n", title);
+            return -1;
+        }
+    }
 
-    strncpy(books[count-1].title, strtok(info, ","), sizeof(books[count-1].title) - 1);
-    strncpy(books[count-1].author, strtok(NULL, ","), sizeof(books[count-1].author) - 1);
-    strncpy(books[count-1].genre, strtok(NULL, ","), sizeof(books[count-1].genre) - 1);
-    strncpy(books[count-1].isbn, strtok(NULL, ","), sizeof(books[count-1].isbn) - 1);
-    books[count-1].publishedYear = atoi(strtok(NULL, ","));
+    //allocate spaces for new book and update the info header
+    dbheader->count++;
+    struct book* newBooks = (struct book*) realloc(*books, (dbheader->count)*sizeof(struct book));
+    if(newBooks == NULL){
+        printf("realloc failed.\n");
+        return -1;
+    }
+    *books = newBooks;
+    int count = dbheader->count;
+
+    strncpy((*books)[count-1].title, title, sizeof((*books)[count-1].title) - 1);
+    strncpy((*books)[count-1].author, author, sizeof((*books)[count-1].author) - 1);
+    strncpy((*books)[count-1].genre, genre, sizeof((*books)[count-1].genre) - 1);
+    strncpy((*books)[count-1].isbn, isbn, sizeof((*books)[count-1].isbn) - 1);
+    (*books)[count-1].publishedYear = atoi(publishedYear);
 
     // for ensuring null-terminatio
-    books[count-1].title[sizeof(books[count-1].title) - 1] = '\0';
-    books[count-1].author[sizeof(books[count-1].author) - 1] = '\0';
-    books[count-1].genre[sizeof(books[count-1].genre) - 1] = '\0';
-    books[count-1].isbn[sizeof(books[count-1].isbn) - 1] = '\0';
+    (*books)[count-1].title[sizeof((*books)[count-1].title) - 1] = '\0';
+    (*books)[count-1].author[sizeof((*books)[count-1].author) - 1] = '\0';
+    (*books)[count-1].genre[sizeof((*books)[count-1].genre) - 1] = '\0';
+    (*books)[count-1].isbn[sizeof((*books)[count-1].isbn) - 1] = '\0';
+
     /**
     printf("\nTesting for info:\n");
     printf("%s  %s  %s  %s  %d  \n",
-        books[dbheader->count-1].title,
-        books[dbheader->count-1].author,
-        books[dbheader->count-1].genre,
-        books[dbheader->count-1].isbn,
-        books[dbheader->count-1].publishedYear);
+        (*books)[dbheader->count-1].title,
+        (*books)[dbheader->count-1].author,
+        (*books)[dbheader->count-1].genre,
+        (*books)[dbheader->count-1].isbn,
+        (*books)[dbheader->count-1].publishedYear);
         */
     return 0;
 }
@@ -138,7 +172,7 @@ int removeBook(struct dbHeader *dbheader, struct book **books, char *title){
     }
     if(index == -1){
         printf("Book not found.\n");
-        return 0;
+        return -1;
     }
     for(int i=index; i<dbheader->count-1; i++){
         (*books)[i] = (*books)[i+1];
@@ -155,8 +189,14 @@ int removeBook(struct dbHeader *dbheader, struct book **books, char *title){
 
 int updateBookPY(struct dbHeader *dbheader, struct book *books, char *info){
 
-    char *title = strtok(info, ",");
+    char* title = strtok(info, ",");
+    if(title == NULL){
+        return -1;
+    }
     unsigned short newYear = atoi(strtok(NULL, ","));
+    if(newYear == 0){
+        return -1;
+    }
 
     int index=-1;
     for(int i=0; i<dbheader->count; i++){
@@ -167,7 +207,7 @@ int updateBookPY(struct dbHeader *dbheader, struct book *books, char *info){
     }
     if(index == -1){
         printf("Book not found.\n");
-        return 0;
+        return -1;
     }
     books[index].publishedYear = newYear;
     return 0;
@@ -202,11 +242,17 @@ int outputDBFile(int fd, struct dbHeader *header, struct book* books){
             return -1;
         }
     }
+
+    // for further use, we resume the state of the file
+    for(unsigned short i=0; i<count; i++){
+        books[i].publishedYear = ntohs(books[i].publishedYear);
+    }
     // Truncate the file to the new size if needed
     if (ftruncate(fd, sizeof(struct dbHeader) + sizeof(struct book) * count) == -1) {
         perror("ftruncate");
         return -1;
     }
+
     return 0;
 }
 

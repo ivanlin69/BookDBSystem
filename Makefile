@@ -1,31 +1,34 @@
-TARGET = bin/BookDBController
-SRC = $(wildcard src/*.c)
-OBJ = $(patsubst src/%.c, obj/%.o, $(SRC))
+TARGET_SERVER = bin/BookDBServer
+TARGET_CLIENT = bin/BookDBClient
+SRC_SERVER = $(wildcard src/server/*.c)
+OBJ_SERVER = $(patsubst src/server/%.c, obj/server/%.o, $(SRC_SERVER))
 
-default: $(TARGET)
+SRC_CLIENT = $(wildcard src/client/*.c)
+OBJ_CLIENT = $(patsubst src/client/%.c, obj/client/%.o, $(SRC_CLIENT))
+
 
 run: clean default
-	./$(TARGET) -n -f test.db
-	./$(TARGET) -a "The Fountainhead,Ayn Rand,Philosophical fiction,978-0026009102,1943" -f test.db
-	./$(TARGET) -a "Meditations,Marcus Aurelius,Philosophy,978-1503280465,2018" -f test.db
-	./$(TARGET) -a "When Nietzsche Wept,Irvin D. Yalom,Philosophical fiction,978-0062009302,1992" -f test.db
-	./$(TARGET) -f test.db -l
-	./$(TARGET) -f test.db -r "dflakjs"
-	./$(TARGET) -f test.db -l
-	./$(TARGET) -f test.db -r "The Fountainhead"
-	./$(TARGET) -f test.db -l
-	./$(TARGET) -a "The Fountainhead,Ayn Rand,Philosophical fiction,978-0026009102,1943" -f test.db
-	./$(TARGET) -f test.db -l
-	./$(TARGET) -f test.db -u "The Fountainhead,2222"
-	./$(TARGET) -f test.db -l
+	./$(TARGET_SERVER) -f sample.db -p 8080 -n
+#	./$(TARGET_CLIENT) -p 8080 -h 127.0.0.1
+#	./$(TARGET_CLIENT) -p 8080 -h 127.0.0.1 -a "The Fountainhead,Ayn Rand,Philosophical fiction,978-0026009102,1943"
+#	./$(TARGET_CLIENT) -p 8080 -h 127.0.0.1 -a "Meditations,Marcus Aurelius,Philosophy,978-1503280465,2018"
+
+default: $(TARGET_SERVER) $(TARGET_CLIENT)
 
 clean:
-	rm -f obj/*.o
+	rm -f obj/server/*.o
+	rm -f obj/client/*.o
 	rm -f bin/*
 	rm -f *.db
 
-$(TARGET): $(OBJ)
+$(TARGET_SERVER): $(OBJ_SERVER)
 	gcc -o $@ $^
 
-obj/%.o : src/%.c
+$(TARGET_CLIENT): $(OBJ_CLIENT)
+	gcc -o $@ $^
+
+obj/server/%.o : src/server/%.c
+	gcc -c $< -o $@ -Iinclude
+
+obj/client/%.o : src/client/%.c
 	gcc -c $< -o $@ -Iinclude
