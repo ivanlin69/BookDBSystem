@@ -119,6 +119,13 @@ int addBook(struct dbHeader *dbheader, struct book **books, char* info){
     if(publishedYear == NULL){
         return -1;
     }
+    // make sure the book doesn't exist
+    for(int i=0; i<dbheader->count; i++){
+        if(strcmp((*books)[i].title, title) == 0){
+            printf("Book <%s> is already in the database.\n", title);
+            return -1;
+        }
+    }
 
     //allocate spaces for new book and update the info header
     dbheader->count++;
@@ -200,7 +207,7 @@ int updateBookPY(struct dbHeader *dbheader, struct book *books, char *info){
     }
     if(index == -1){
         printf("Book not found.\n");
-        return 0;
+        return -1;
     }
     books[index].publishedYear = newYear;
     return 0;
