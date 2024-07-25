@@ -75,7 +75,7 @@ This is a `C`-based program functions as a database system to manage book inform
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/yourusername/BookDBSystem.git
+   git clone https://github.com/ivanlin69/BookDBSystem.git
    cd BookDBSystem
    ```
 2. **Compile the Program**
