@@ -1,6 +1,7 @@
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -112,7 +113,9 @@ int main (int argc, char *argv[]){
         return 0;
     }
     // Sending request for initialization
+    printf("\nSending request for validating protocal ...\n");
     if(sendInit(hostFD) == -1){
+        close(hostFD);
         return -1;
     }
 
@@ -120,10 +123,13 @@ int main (int argc, char *argv[]){
         if(addInfo == NULL){
             printf("Lack of an argument for adding new book.\n");
             printUsage(argv);
+            close(hostFD);
             return 0;
         }
         // send request for adding a new book
+        printf("\nSending request for adding a new book ...\n");
         if(sendAddReq(hostFD, addInfo) == -1){
+            close(hostFD);
             return -1;
         }
     }
@@ -132,10 +138,14 @@ int main (int argc, char *argv[]){
         if(removeTitle == NULL){
             printf("Lack of an argument for removing the book.\n");
             printUsage(argv);
+            close(hostFD);
             return 0;
         }
+        removeTitle[strlen(removeTitle)] = '\0';
         // send request for removing a book
+        printf("\nSending request for removing the book ...\n");
         if(sendDelReq(hostFD, removeTitle) == -1){
+            close(hostFD);
             return -1;
         }
     }
@@ -144,17 +154,23 @@ int main (int argc, char *argv[]){
         if(updateInfo == NULL){
             printf("Lack of an argument for updating the book.\n");
             printUsage(argv);
+            close(hostFD);
             return 0;
         }
+        updateInfo[strlen(updateInfo)] = '\0';
         // send request for updating a book's published year'
+        printf("\nSending request for updating the book ...\n");
         if(sendUpdateReq(hostFD, updateInfo) == -1){
+            close(hostFD);
             return -1;
         }
     }
 
     if(listFlag == 1){
         // send request for listing all books
+        printf("\nSending request for listing all books in the database ...\n");
         if(sendListReq(hostFD) == -1){
+            close(hostFD);
             return -1;
         }
     }

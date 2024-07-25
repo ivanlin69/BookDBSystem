@@ -77,6 +77,32 @@ int sendAddResp(clientState * client, protocolHd * phdr){
     return 0;
 }
 
+int sendDelResp(clientState * client, protocolHd * phdr){
+    phdr->type = MSG_DEL_RESP;
+    phdr->len = 0;
+    phdr->type = htonl(phdr->type);
+    phdr->len = htons(phdr->len);
+    // write content(ADD, MSG_ADD_RESP)
+    if(write(client->fd, phdr, sizeof(phdr)) <= 0){
+        perror("write");
+        return -1;
+    }
+    return 0;
+}
+
+int sendUpdateResp(clientState * client, protocolHd * phdr){
+    phdr->type = MSG_UPDATE_RESP;
+    phdr->len = 0;
+    phdr->type = htonl(phdr->type);
+    phdr->len = htons(phdr->len);
+    // write content(ADD, MSG_ADD_RESP)
+    if(write(client->fd, phdr, sizeof(phdr)) <= 0){
+        perror("write");
+        return -1;
+    }
+    return 0;
+}
+
 int sendListResp(clientState * client, protocolHd * phdr, struct dbHeader* dbHeader, struct book* books){
     phdr->type = MSG_LIST_RESP;
     phdr->len = dbHeader->count;  // len as the number of books
@@ -133,7 +159,7 @@ void handleClient(clientState* client, int dbfd, struct dbHeader *dbHeader, stru
         switch(phdr->type){
 
             case MSG_ADD_REQ:{
-                protocolAddReq *addreq = (protocolAddReq *) &phdr[1];
+                protocolADUReq *addreq = (protocolADUReq *) &phdr[1];
                 printf("\nRequest for adding an new book received ...\n");
                 if(addBook(dbHeader, books, addreq->data) == -1){
                     printf("Adding new book failed.\n");
@@ -147,18 +173,34 @@ void handleClient(clientState* client, int dbfd, struct dbHeader *dbHeader, stru
                 }
             }
 
-            case MSG_DEL_REQ:{ //TODO
-                printf("\nRequest for listing all books received ...\n");
-                sendListResp(client, phdr, dbHeader, *books);
-                printf("List sent successfully.\n");
-                return;
+            case MSG_DEL_REQ:{
+                protocolADUReq *delreq = (protocolADUReq *) &phdr[1];
+                printf("\nRequest for deleting book <%s> received ...\n", delreq->data);
+                if(removeBook(dbHeader, books, delreq->data) == -1){
+                    printf("Failed to delete the book.\n");
+                    sendError(client, phdr);
+                    return;
+                } else{
+                    sendDelResp(client, phdr);
+                    outputDBFile(dbfd, dbHeader, *books);
+                    printf("Book deleted successfully.\n");
+                    return;
+                }
             }
 
-            case MSG_UPDATE_REQ:{ //TODO
-                printf("\nRequest for listing all books received ...\n");
-                sendListResp(client, phdr, dbHeader, *books);
-                printf("List sent successfully.\n");
-                return;
+            case MSG_UPDATE_REQ:{
+                protocolADUReq *updateReq = (protocolADUReq *) &phdr[1];
+                printf("\nRequest for updating a book received ...\n");
+                if(updateBookPY(dbHeader, *books, updateReq->data) == -1){
+                    printf("Failed to update the book.\n");
+                    sendError(client, phdr);
+                    return;
+                } else{
+                    sendUpdateResp(client, phdr);
+                    outputDBFile(dbfd, dbHeader, *books);
+                    printf("Book updated successfully.\n");
+                    return;
+                }
             }
 
             case MSG_LIST_REQ:{
@@ -167,6 +209,7 @@ void handleClient(clientState* client, int dbfd, struct dbHeader *dbHeader, stru
                 printf("List sent successfully.\n");
                 return;
             }
+
             default:
                 return;
         }

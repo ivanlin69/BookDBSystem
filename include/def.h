@@ -41,9 +41,10 @@ typedef struct{
     uint16_t version;
 } protocolInitRESP;
 
+// used for ADD, DEL and UPDATE request
 typedef struct{
     char data[1024];
-} protocolAddReq;
+} protocolADUReq;
 
 typedef struct{
     char title[32];

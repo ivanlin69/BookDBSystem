@@ -117,7 +117,7 @@ void pollLoop(unsigned short port, struct dbHeader *dbHeader, struct book **book
             if(fds[i].fd != -1 && fds[i].revents & POLLIN){
                 int fd = fds[i].fd;
                 int slot = findSlotByFD(fd, clientStates);
-                // read the date to the corresponding buffer for further use
+                // read the data to the corresponding buffer for further use
                 ssize_t readData = read(fd, clientStates[slot].buffer, sizeof(clientStates[slot].buffer));
                 if(readData <= 0){
                     if(readData == -1){

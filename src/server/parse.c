@@ -165,7 +165,7 @@ int removeBook(struct dbHeader *dbheader, struct book **books, char *title){
     }
     if(index == -1){
         printf("Book not found.\n");
-        return 0;
+        return -1;
     }
     for(int i=index; i<dbheader->count-1; i++){
         (*books)[i] = (*books)[i+1];
@@ -182,8 +182,14 @@ int removeBook(struct dbHeader *dbheader, struct book **books, char *title){
 
 int updateBookPY(struct dbHeader *dbheader, struct book *books, char *info){
 
-    char *title = strtok(info, ",");
+    char* title = strtok(info, ",");
+    if(title == NULL){
+        return -1;
+    }
     unsigned short newYear = atoi(strtok(NULL, ","));
+    if(newYear == 0){
+        return -1;
+    }
 
     int index=-1;
     for(int i=0; i<dbheader->count; i++){

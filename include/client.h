@@ -4,6 +4,8 @@
 #include "def.h"
 #include "parse.h"
 
+#define BUFFER_SIZE 2048
+
 int sendInit(int fd);
 int sendAddReq(int fd, char* addInfo);
 int sendDelReq(int fd, char* removeInfo);
