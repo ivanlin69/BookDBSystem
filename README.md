@@ -68,7 +68,7 @@ This is a `C`-based program functions as a database system to manage book inform
 ## Prerequisites
 
 - A modern C compiler (e.g., GCC, Clang)
-- CMake for building the project (optional)
+- CMake for building the project
 
 
 ### Installation
