@@ -49,7 +49,7 @@ int sendInit(int fd){
     return 0;
 }
 
-int sendAddReq(int fd, char* addInfo){
+int sendADUReq(int fd, char* info, protocolMSG state){
     if(fd == -1){
         printf("Bad file descriptor.\n");
         return -1;
@@ -57,16 +57,16 @@ int sendAddReq(int fd, char* addInfo){
     // Note that buffer should be larger than sizeof protocolADUReq
     //  since we also need to include the header(protocolHd)
     char buffer[BUFFER_SIZE] = {0};
-    // write protocal header(ADD_REQ)
+    // write protocal header
     protocolHd *phdr = (protocolHd *) buffer;
-    phdr->type = MSG_ADD_REQ;
+    phdr->type = state;
     phdr->len = 1;
     phdr->type = htonl(phdr->type);
     phdr->len = htons(phdr->len);
 
-    protocolADUReq *add = (protocolADUReq *) &phdr[1];
+    protocolADUReq *aduData = (protocolADUReq *) &phdr[1];
     // size is always the same as buffer to avoid overflow
-    strncpy(add->data, addInfo, sizeof(add->data));
+    strncpy(aduData->data, info, sizeof(aduData->data));
 
     if(write(fd, buffer, sizeof(protocolHd) + sizeof(protocolADUReq)) <= 0){
         perror("write");
@@ -83,101 +83,34 @@ int sendAddReq(int fd, char* addInfo){
     phdr->len = ntohs(phdr->len);
     // check the response from host
     if(phdr->type == MSG_ERROR){
-        printf("Failed to add the book.\n");
+        printf("Operation failed.\n");
         close(fd);
         return -1;
     }
 
-    if(phdr->type == MSG_ADD_RESP){
-        printf("Book successfully added to the database.\n");
-    }
-    return 0;
-}
+    switch (state){
+        case MSG_ADD_REQ:
+        if(phdr->type == MSG_ADD_RESP){
+            printf("Book successfully added to the database.\n");
+            return 0;
+        }
 
-int sendDelReq(int fd, char* updateInfo){
-    if(fd == -1){
-        printf("Bad file descriptor.\n");
-        return -1;
-    }
-    char buffer[BUFFER_SIZE] = {0};
-    // write protocal header(DEL_REQ)
-    protocolHd *phdr = (protocolHd *) buffer;
-    phdr->type = MSG_DEL_REQ;
-    phdr->len = 1;
-    phdr->type = htonl(phdr->type);
-    phdr->len = htons(phdr->len);
+        case MSG_DEL_REQ:
+        if(phdr->type == MSG_DEL_RESP){
+            printf("Book successfully removed from the database.\n");
+            return 0;
+        }
 
-    protocolADUReq *del = (protocolADUReq *) &phdr[1];
-    // size is always the same as buffer to avoid overflow
-    strncpy(del->data, updateInfo, sizeof(del->data));
+        case MSG_UPDATE_REQ:
+        if(phdr->type == MSG_UPDATE_RESP){
+            printf("Book has been successfully updated.\n");
+            return 0;
+        }
 
-    if(write(fd, buffer, sizeof(protocolHd) + sizeof(protocolADUReq)) <= 0){
-        perror("write");
-        close(fd);
-        return -1;
-    }
-    // read the respondse from host
-    if(read(fd, buffer, sizeof(buffer)) <= 0){
-        perror("read");
-        close(fd);
-        return -1;
-    }
-    phdr->type = ntohl(phdr->type);
-    phdr->len = ntohs(phdr->len);
-    // check the response from host
-    if(phdr->type == MSG_ERROR){
-        printf("Failed to remove the book.\n");
-        close(fd);
-        return -1;
-    }
-
-    if(phdr->type == MSG_DEL_RESP){
-        printf("Book successfully removed from the database.\n");
-    }
-
-    return 0;
-}
-
-
-int sendUpdateReq(int fd, char* updateInfo){
-    if(fd == -1){
-        printf("Bad file descriptor.\n");
-        return -1;
-    }
-    char buffer[BUFFER_SIZE] = {0};
-    // write protocal header(UPDATE_REQ)
-    protocolHd *phdr = (protocolHd *) buffer;
-    phdr->type = MSG_UPDATE_REQ;
-    phdr->len = 1;
-    phdr->type = htonl(phdr->type);
-    phdr->len = htons(phdr->len);
-
-    protocolADUReq *del = (protocolADUReq *) &phdr[1];
-    // size is always the same as buffer to avoid overflow
-    strncpy(del->data, updateInfo, sizeof(del->data));
-
-    if(write(fd, buffer, sizeof(protocolHd) + sizeof(protocolADUReq)) <= 0){
-        perror("write");
-        close(fd);
-        return -1;
-    }
-    // read the respondse from host
-    if(read(fd, buffer, sizeof(buffer)) <= 0){
-        perror("read");
-        close(fd);
-        return -1;
-    }
-    phdr->type = ntohl(phdr->type);
-    phdr->len = ntohs(phdr->len);
-    // check the response from host
-    if(phdr->type == MSG_ERROR){
-        printf("Failed to update the book.\n");
-        close(fd);
-        return -1;
-    }
-
-    if(phdr->type == MSG_UPDATE_RESP){
-        printf("Book has been successfully updated.\n");
+        default:
+            printf("MSG mismatched.\n");
+            close(fd);
+            return -1;
     }
     return 0;
 }

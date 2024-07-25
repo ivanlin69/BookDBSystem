@@ -7,9 +7,8 @@
 #define BUFFER_SIZE 2048
 
 int sendInit(int fd);
-int sendAddReq(int fd, char* addInfo);
-int sendDelReq(int fd, char* removeInfo);
-int sendUpdateReq(int fd, char* updateInfo);
+// send add, del or update request
+int sendADUReq(int fd, char* info, protocolMSG state);
 int sendListReq(int fd);
 
 #endif
