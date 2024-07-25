@@ -128,7 +128,7 @@ int main (int argc, char *argv[]){
         }
         // send request for adding a new book
         printf("\nSending request for adding a new book ...\n");
-        if(sendAddReq(hostFD, addInfo) == -1){
+        if(sendADUReq(hostFD, addInfo, MSG_ADD_REQ) == -1){
             close(hostFD);
             return -1;
         }
@@ -144,7 +144,7 @@ int main (int argc, char *argv[]){
         removeTitle[strlen(removeTitle)] = '\0';
         // send request for removing a book
         printf("\nSending request for removing the book ...\n");
-        if(sendDelReq(hostFD, removeTitle) == -1){
+        if(sendADUReq(hostFD, removeTitle, MSG_DEL_REQ) == -1){
             close(hostFD);
             return -1;
         }
@@ -160,7 +160,7 @@ int main (int argc, char *argv[]){
         updateInfo[strlen(updateInfo)] = '\0';
         // send request for updating a book's published year'
         printf("\nSending request for updating the book ...\n");
-        if(sendUpdateReq(hostFD, updateInfo) == -1){
+        if(sendADUReq(hostFD, updateInfo, MSG_UPDATE_REQ) == -1){
             close(hostFD);
             return -1;
         }
