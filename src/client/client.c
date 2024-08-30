@@ -39,7 +39,7 @@ int sendInit(int fd){
     phdr->type = ntohl(phdr->type);
     phdr->len = ntohs(phdr->len);
     // check the response from host
-    if(phdr->type == MSG_ERROR){
+    if(phdr->type == MSG_ERROR || phdr->type != MSG_INIT_RESP){
         printf("Protocal mismatched).\n");
         close(fd);
         return -1;
@@ -142,7 +142,7 @@ int sendListReq(int fd){
     phdr->type = ntohl(phdr->type);
     phdr->len = ntohs(phdr->len);
     // check the response from host
-    if(phdr->type == MSG_ERROR){
+    if(phdr->type == MSG_ERROR || phdr->type != MSG_LIST_RESP){
         printf("Unable to aquire data).\n");
         close(fd);
         return -1;
